@@ -1,19 +1,19 @@
 """Unit tests for the pure mathematical primitives in vstg.core.
 
-These tests exercise optimal_size, optimal_hash_count, and bit_indices
-in isolation, since all three are fully deterministic and free of any
-mutable state. Coverage here is intended to be exhaustive precisely
-because these functions form the foundation every other module in the
-package depends on. An error in the sizing formula or the index
-derivation would silently corrupt the correctness guarantees of every
-filter built on top of it.
+These tests exercise optimal_size, optimal_hash_count, bit_indices, and
+shard_index in isolation, since all four are fully deterministic and
+free of any mutable state. Coverage here is intended to be exhaustive
+precisely because these functions form the foundation every other
+module in the package depends on. An error in the sizing formula, the
+index derivation, or the shard routing would silently corrupt the
+correctness guarantees of every filter built on top of it.
 """
 
 from __future__ import annotations
 
 import unittest
 
-from vstg.core import bit_indices, optimal_hash_count, optimal_size
+from vstg.core import bit_indices, optimal_hash_count, optimal_size, shard_index
 
 
 class OptimalSizeTests(unittest.TestCase):
@@ -130,6 +130,49 @@ class BitIndicesTests(unittest.TestCase):
     """Zero or fewer hash rounds would derive no positions at all."""
     with self.assertRaises(ValueError):
       bit_indices(b"member", size=1_024, hash_count=0)
+
+
+class ShardIndexTests(unittest.TestCase):
+  """Validate the deterministic routing of members to shard indices."""
+
+  def test_same_member_always_routes_to_the_same_shard(self) -> None:
+    """Determinism here is what allows a restarted process to find a member again."""
+    first_attempt = shard_index(b"consistent-member", shard_count=8)
+    second_attempt = shard_index(b"consistent-member", shard_count=8)
+
+    self.assertEqual(first_attempt, second_attempt)
+
+  def test_result_always_falls_within_bounds(self) -> None:
+    """No returned shard index may fall outside the addressable shard range."""
+    for candidate_index in range(200):
+      member = f"member-{candidate_index}".encode("utf-8")
+      routed_index = shard_index(member, shard_count=8)
+
+      self.assertGreaterEqual(routed_index, 0)
+      self.assertLess(routed_index, 8)
+
+  def test_distinct_members_spread_across_multiple_shards(self) -> None:
+    """A large, varied population should not all collapse onto a single shard."""
+    routed_indices = {
+      shard_index(f"member-{index}".encode("utf-8"), shard_count=8) for index in range(200)
+    }
+
+    self.assertGreater(len(routed_indices), 1)
+
+  def test_single_shard_routes_every_member_to_index_zero(self) -> None:
+    """With only one shard available, every member has nowhere else to go."""
+    for candidate_index in range(50):
+      member = f"member-{candidate_index}".encode("utf-8")
+
+      self.assertEqual(shard_index(member, shard_count=1), 0)
+
+  def test_rejects_non_positive_shard_count(self) -> None:
+    """A shard count of zero or below describes no meaningful partitioning."""
+    with self.assertRaises(ValueError):
+      shard_index(b"member", shard_count=0)
+
+    with self.assertRaises(ValueError):
+      shard_index(b"member", shard_count=-3)
 
 
 if __name__ == "__main__":

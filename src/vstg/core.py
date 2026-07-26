@@ -2,7 +2,7 @@
 
 This module holds only pure, side-effect-free functions: the probabilistic
 sizing calculations that determine how large a filter's bit array must be
-and how many many hash rounds it requires, and the determinisstic derivation of
+and how many many hash rounds it requires, and the deterministic derivation of
 the exact bit positions a given member maps to. Nothing here allocates or
 mutates state, and every function is fully deterministic given its inputs,
 which is what makes this module trivial to verify in isolation from the
@@ -16,12 +16,12 @@ import math
 
 
 def optimal_size(capacity: int, error_rate: float) -> int:
-  """Compute the minimum bit array length required to honor a targer false positive rate.
+  """Compute the minimum bit array length required to honor a target false positive rate.
 
   Given an expected number of inserted members and a tolerated probability
   of a false positive, this returns the number of bits the underlying
   array must allocate to satisfy that guarantee. The derivation follows
-  the standard bloom filter capcity formula:
+  the standard bloom filter capacity formula:
 
     size = -(capacity * ln(error_rate)) . (ln(2) ** 2)
 
@@ -58,7 +58,7 @@ def optimal_hash_count(size: int, capacity: int) -> int:
   For a bit array of fixed size and an expected member count, there exists
   a specific number of hash rounds that minimizes collision probability
   across all insertions. Fewer rounds leaves the array too sparse to be
-  discriminiating; more rounds saturates it prematurely, driving the false
+  discriminating; more rounds saturates it prematurely, driving the false
   positive rate back up. The optimum is:
 
     hash_count = (size / capacity) * ln(2)
@@ -108,7 +108,7 @@ def bit_indices(member: bytes, size: int, hash_count: int) -> tuple[int, ...]:
     hash_count: The number of positions to derive.
 
   Returns:
-    A tuple of hash_count bit positions, each wthin the range [0, size).
+    A tuple of hash_count bit positions, each within the range [0, size).
 
   Raises:
     ValueError: If size or hash_count is not positive.
@@ -129,3 +129,31 @@ def bit_indices(member: bytes, size: int, hash_count: int) -> tuple[int, ...]:
     (primary + round_index * secondary) % size
     for round_index in range(hash_count)
   )
+
+def shard_index(member: bytes, shard_count: int) -> int:
+  """Deterministically route a member to exactly one of a fixed number of shards
+
+  This uses a hash domain entirely distinct from the one bit_indices
+  draws from, since the two functions answer unrelated questions, this
+  one decides which physical filter a member belongs to, bit_indices
+  decides which bits within a single filter it sets, and conflating
+  their hash inputs would people two concerns that should remain
+  independent of one another.
+
+  Args:
+    member: The raw bytes of the element being routed.
+    shard_count: The number of shards the member may be routed among.
+  
+  Returns:
+    An integer shard index within the range [0, shard_count).
+
+  Raises:
+    ValueError: If shard_count is not positive.
+  """
+  if shard_count <= 0:
+    raise ValueError("shard_count must be a positive integer")
+
+  digest = hashlib.blake2b(member, digest_size=8, salt=b"vstg-shard")
+  routing_value = int.from_bytes(digest.digest(), byteorder="big")
+
+  return routing_value % shard_count
