@@ -30,23 +30,22 @@ _HEADER_LENGTH = struct.calcsize(_HEADER_LAYOUT)
 @dataclass(frozen=True)
 class PersistPolicy:
   """Configuration governing when a running filter checkpoints to disk.
-  
+
   A policy expresses up to two independent triggers for an automatic
-  checkpoint, either of which is sufficient on its own warrant one.
+  checkpoint, either of which is sufficient on its own to warrant one.
   A policy leaving both unset performs no automatic checkpointing and
   relies entirely on manual invocation or on checkpoint_on_shutdown.
-  
+
   Attributes:
     checkpoint_interval_seconds: The maximum duration, in seconds,
-                                 permitted to elapse between checkpoints.
-                                 None disables time-based checkpointing.
-    checkpoint_insert_threshold: The maximum number of insertions permitted
-                                 to accumulate between checkpoints. None
-                                 disables count-based checkpointing.
-    checkpoint_on_shutdown: Whether a final checkpoint should be written
-                            during an orderly shutdown, independent of how
-                            much time or how many insertions have elapsed
-                            since the previous one.
+                                 permitted to elapse between checkpoints. None disables
+                                 time-based checkpointing.
+    checkpoint_insert_threshold: The maximum number of insertions
+                                 permitted to accumulate between checkpoints. None disables
+                                 count-based checkpointing.
+    checkpoint_on_shutdown: Whether a final checkpoint should be
+                            written during an orderly shutdown, independent of how much
+                            time or how many insertions have elapsed since the previous one.
   """
 
   checkpoint_interval_seconds: float | None = None
@@ -54,7 +53,7 @@ class PersistPolicy:
   checkpoint_on_shutdown: bool = True
 
   def __post_init__(self) -> None:
-    """Reject non-positive threshold before they can silently misbehave."""
+    """Reject non-positive thresholds before they can silently misbehave."""
     if self.checkpoint_interval_seconds is not None and self.checkpoint_interval_seconds <= 0:
       raise ValueError("checkpoint_interval_seconds must be positive when set")
 
@@ -63,18 +62,17 @@ class PersistPolicy:
 
 
 def should_checkpoint(
-    policy: PersistPolicy,
-    last_checkpoint_at: float,
-    current_time: float,
-    inserts_since_checkpoint: int,
+  policy: PersistPolicy,
+  last_checkpoint_at: float,
+  current_time: float,
+  inserts_since_checkpoint: int,
 ) -> bool:
   """Determine whether accumulated activity warrants an immediate checkpoint.
-  
+
   This function accepts explicit timestamps rather than reading a
   clock internally, which keeps the decision deterministic and
   trivially testable without waiting on real elapsed time or mocking
   the system clock.
-  
 
   Args:
     policy: The checkpoint policy currently in effect.
@@ -82,8 +80,8 @@ def should_checkpoint(
                         recent checkpoint was written.
     current_time: The current timestamp, in seconds, measured against
                   last_checkpoint_at to determine elapsed time.
-    insert_since_checkpoint: The number of insertions that have occurred
-                             since the most recent checkpoints.
+    inserts_since_checkpoint: The number of insertions that have
+                              occurred since the most recent checkpoint.
 
   Returns:
     True if either the configured interval or insertion threshold has
@@ -104,7 +102,7 @@ def should_checkpoint(
 def serialize(bloom_filter: BloomFilter) -> bytes:
   """Encode a filter's complete state into a portable binary payload.
 
-  The payload beings with a fixed-width header identifying the format
+  The payload begins with a fixed-width header identifying the format
   and recording the parameters required to reconstruct the filter,
   followed immediately by the raw bit array contents. The header opens
   with a four-byte signature and a version byte specifically so that a
@@ -133,7 +131,7 @@ def serialize(bloom_filter: BloomFilter) -> bytes:
 
 def deserialize(payload: bytes) -> BloomFilter:
   """Reconstruct a filter instance from a previously serialized payload.
-  
+
   Args:
     payload: The complete binary payload, as produced by serialize.
 
@@ -143,9 +141,9 @@ def deserialize(payload: bytes) -> BloomFilter:
 
   Raises:
     ValueError: If the payload is too short to contain a complete
-                header, carries an unrecognized signature or unsupported
-                format version, or the bit array length does not match
-                what the header declares.
+                header, carries an unrecognized signature or unsupported format
+                version, or the bit array length does not match what the header
+                declares.
   """
   if len(payload) < _HEADER_LENGTH:
     raise ValueError("payload is truncated: incomplete header")
@@ -176,7 +174,7 @@ def save(bloom_filter: BloomFilter, destination: Path) -> None:
   """Persist a filter to disk atomically.
 
   The payload is first written in full to a temporary sibling file and
-  only then moved into place with an atomic rename This guarantees
+  only then moved into place with an atomic rename, this guarantees
   that a process interrupted mid-write, whether by a crash or a forced
   shutdown, can never leave a corrupted, partially-written file at the
   destination, the destination holds either the previous complete
@@ -184,7 +182,8 @@ def save(bloom_filter: BloomFilter, destination: Path) -> None:
 
   Args:
     bloom_filter: The filter instance to serialize and persist.
-    destination: The file path the checkpoint should occupy once written
+    destination: The file path the checkpoint should occupy once
+                 written.
   """
   payload = serialize(bloom_filter)
   temporary_path = destination.with_suffix(destination.suffix + ".tmp")
@@ -194,13 +193,13 @@ def save(bloom_filter: BloomFilter, destination: Path) -> None:
 
 def load(source: Path) -> BloomFilter:
   """Load a previously persisted filter from disk.
-  
+
   Args:
     source: The file path a checkpoint was previously written to.
 
   Returns:
-    A filter instance whose state exactly matches the one that
-    was checkpointed.
+    A filter instance whose state exactly matches the one that was
+    checkpointed.
   """
   payload = source.read_bytes()
 
