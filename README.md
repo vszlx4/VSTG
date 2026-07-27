@@ -40,22 +40,19 @@ path is needed.
 
 ## Install
 
-Not yet published to PyPI. Until it is:
-
 ```bash
-pip install git+https://github.com/vszlx4/vstg.git
+pip install vstg
 ```
 
-Or, cloned and editable, for contributing:
+No dependencies are ever installed alongside it.
+
+For contributing, clone and install in editable mode instead:
 
 ```bash
 git clone https://github.com/vszlx4/vstg.git
 cd vstg
 pip install -e '.[dev]'
 ```
-
-Once published, this becomes `pip install vstg`. No dependencies are
-ever installed alongside it either way.
 
 ## Usage
 
