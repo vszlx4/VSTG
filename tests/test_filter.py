@@ -148,7 +148,7 @@ class ReprTests(unittest.TestCase):
   """Validate that the debugging representation surfaces the fields that matter."""
 
   def test_repr_contains_class_name_and_configuration_fields(self) -> None:
-    """A useful repr must let an engineer identify both the type and its configuration at a glance."""
+    """A useful repr must let an engineer identify the type and its configuration at a glance."""
     bloom_filter = BloomFilter(capacity=300, error_rate=0.05)
     representation = repr(bloom_filter)
 

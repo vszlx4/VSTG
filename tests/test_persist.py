@@ -17,11 +17,11 @@ from pathlib import Path
 
 from vstg.filter import BloomFilter
 from vstg.persist import (
-  PersistPolicy,
   _FILE_SIGNATURE,
   _FORMAT_VERSION,
   _HEADER_LAYOUT,
   _HEADER_LENGTH,
+  PersistPolicy,
   deserialize,
   load,
   save,
@@ -80,7 +80,9 @@ class ShouldCheckpointTests(unittest.TestCase):
     policy = PersistPolicy(checkpoint_interval_seconds=60)
 
     self.assertTrue(
-      should_checkpoint(policy, last_checkpoint_at=0.0, current_time=60.0, inserts_since_checkpoint=0)
+      should_checkpoint(
+        policy, last_checkpoint_at=0.0, current_time=60.0, inserts_since_checkpoint=0
+      )
     )
 
   def test_does_not_fire_before_configured_interval_elapses(self) -> None:
@@ -88,7 +90,9 @@ class ShouldCheckpointTests(unittest.TestCase):
     policy = PersistPolicy(checkpoint_interval_seconds=60)
 
     self.assertFalse(
-      should_checkpoint(policy, last_checkpoint_at=0.0, current_time=30.0, inserts_since_checkpoint=0)
+      should_checkpoint(
+        policy, last_checkpoint_at=0.0, current_time=30.0, inserts_since_checkpoint=0
+      )
     )
 
   def test_fires_when_insert_threshold_is_reached(self) -> None:
@@ -96,7 +100,9 @@ class ShouldCheckpointTests(unittest.TestCase):
     policy = PersistPolicy(checkpoint_insert_threshold=100)
 
     self.assertTrue(
-      should_checkpoint(policy, last_checkpoint_at=0.0, current_time=1.0, inserts_since_checkpoint=100)
+      should_checkpoint(
+        policy, last_checkpoint_at=0.0, current_time=1.0, inserts_since_checkpoint=100
+      )
     )
 
   def test_does_not_fire_before_insert_threshold_is_reached(self) -> None:
@@ -104,7 +110,9 @@ class ShouldCheckpointTests(unittest.TestCase):
     policy = PersistPolicy(checkpoint_insert_threshold=100)
 
     self.assertFalse(
-      should_checkpoint(policy, last_checkpoint_at=0.0, current_time=1.0, inserts_since_checkpoint=50)
+      should_checkpoint(
+        policy, last_checkpoint_at=0.0, current_time=1.0, inserts_since_checkpoint=50
+      )
     )
 
   def test_either_configured_trigger_is_independently_sufficient(self) -> None:
@@ -112,7 +120,9 @@ class ShouldCheckpointTests(unittest.TestCase):
     policy = PersistPolicy(checkpoint_interval_seconds=60, checkpoint_insert_threshold=1_000)
 
     self.assertTrue(
-      should_checkpoint(policy, last_checkpoint_at=0.0, current_time=60.0, inserts_since_checkpoint=1)
+      should_checkpoint(
+        policy, last_checkpoint_at=0.0, current_time=60.0, inserts_since_checkpoint=1
+      )
     )
 
   def test_no_configured_trigger_never_fires(self) -> None:

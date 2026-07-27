@@ -115,7 +115,7 @@ class ConvenienceFunctionTests(unittest.TestCase):
     self.assertFalse(vstg.might_contain("usernames", b"never-inserted-member"))
 
   def test_might_contain_raises_key_error_for_an_unregistered_name(self) -> None:
-    """Checking a name that was never registered must fail loudly, matching the registry's behavior."""
+    """Checking a never registered name must fail loudly, matching the registry's behavior."""
     with self.assertRaises(KeyError):
       vstg.might_contain("never-registered", b"a-member")
 

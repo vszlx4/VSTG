@@ -216,7 +216,10 @@ class CloseAllTests(unittest.TestCase):
   def test_close_all_writes_a_filter_configured_to_checkpoint_on_shutdown(self) -> None:
     """A filter registered with checkpoint_on_shutdown enabled must be persisted by close_all."""
     self._registry.register(
-      "usernames", capacity=1_000, error_rate=0.01, policy=PersistPolicy(checkpoint_on_shutdown=True)
+      "usernames",
+      capacity=1_000,
+      error_rate=0.01,
+      policy=PersistPolicy(checkpoint_on_shutdown=True),
     )
     self._registry.add("usernames", b"a-member")
 
@@ -225,9 +228,12 @@ class CloseAllTests(unittest.TestCase):
     self.assertTrue((self._base_directory / "usernames.bloom").exists())
 
   def test_close_all_skips_a_filter_configured_not_to_checkpoint_on_shutdown(self) -> None:
-    """A filter registered with checkpoint_on_shutdown disabled must be left unsaved by close_all."""
+    """A filter with checkpoint_on_shutdown disabled must be left unsaved by close_all."""
     self._registry.register(
-      "usernames", capacity=1_000, error_rate=0.01, policy=PersistPolicy(checkpoint_on_shutdown=False)
+      "usernames",
+      capacity=1_000,
+      error_rate=0.01,
+      policy=PersistPolicy(checkpoint_on_shutdown=False),
     )
     self._registry.add("usernames", b"a-member")
 
@@ -238,7 +244,10 @@ class CloseAllTests(unittest.TestCase):
   def test_close_all_treats_each_registered_filter_independently(self) -> None:
     """One filter's shutdown policy must not influence whether another filter gets persisted."""
     self._registry.register(
-      "usernames", capacity=1_000, error_rate=0.01, policy=PersistPolicy(checkpoint_on_shutdown=True)
+      "usernames",
+      capacity=1_000,
+      error_rate=0.01,
+      policy=PersistPolicy(checkpoint_on_shutdown=True),
     )
     self._registry.register(
       "email_tokens",
@@ -271,7 +280,10 @@ class ContextManagerTests(unittest.TestCase):
     """Exiting a with block must invoke close_all automatically."""
     with BloomFilterRegistry(self._base_directory) as registry:
       registry.register(
-        "usernames", capacity=1_000, error_rate=0.01, policy=PersistPolicy(checkpoint_on_shutdown=True)
+        "usernames",
+        capacity=1_000,
+        error_rate=0.01,
+        policy=PersistPolicy(checkpoint_on_shutdown=True),
       )
       registry.add("usernames", b"a-member")
 

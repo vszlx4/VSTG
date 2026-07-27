@@ -20,7 +20,6 @@ from pathlib import Path
 
 from vstg.filter import BloomFilter
 
-
 _FILE_SIGNATURE = b"VSTG"
 _FORMAT_VERSION = 1
 _HEADER_LAYOUT = ">4sBQdQI"
@@ -92,11 +91,10 @@ def should_checkpoint(
     if elapsed_seconds >= policy.checkpoint_interval_seconds:
       return True
 
-  if policy.checkpoint_insert_threshold is not None:
-    if inserts_since_checkpoint >= policy.checkpoint_insert_threshold:
-      return True
-
-  return False
+  return (
+    policy.checkpoint_insert_threshold is not None
+    and inserts_since_checkpoint >= policy.checkpoint_insert_threshold
+  )
 
 
 def serialize(bloom_filter: BloomFilter) -> bytes:

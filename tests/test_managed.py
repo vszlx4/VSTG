@@ -64,7 +64,7 @@ class ManagedBloomFilterTests(unittest.TestCase):
     self.assertFalse(managed_filter.might_contain(b"anything"))
 
   def test_open_resumes_from_an_existing_checkpoint(self) -> None:
-    """A prior checkpoint on disk must be loaded rather than discarded in favor of a fresh filter."""
+    """A prior checkpoint must be loaded rather than discarded in favor of a fresh filter."""
     original_managed_filter = ManagedBloomFilter.open(
       self._checkpoint_path,
       capacity=100,

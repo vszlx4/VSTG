@@ -61,7 +61,11 @@ class ShardedBloomFilterTests(unittest.TestCase):
     """A shard count of zero or below describes no meaningful partitioning."""
     with self.assertRaises(ValueError):
       ShardedBloomFilter.open(
-        self._shard_directory, shard_count=0, capacity=1_000, error_rate=0.01, policy=PersistPolicy()
+        self._shard_directory,
+        shard_count=0,
+        capacity=1_000,
+        error_rate=0.01,
+        policy=PersistPolicy(),
       )
 
   def test_no_shard_files_exist_before_any_checkpoint(self) -> None:
@@ -102,7 +106,7 @@ class ShardedBloomFilterTests(unittest.TestCase):
     self.assertEqual(len(written_files), 1)
 
   def test_checkpoint_eventually_writes_every_shard_once_each_has_an_insertion(self) -> None:
-    """With enough distinct members, every shard should eventually receive at least one insertion."""
+    """With enough distinct members, every shard should eventually receive an insertion."""
     shard_count = 4
     sharded_filter = ShardedBloomFilter.open(
       self._shard_directory,

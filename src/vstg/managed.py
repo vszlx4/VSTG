@@ -104,7 +104,7 @@ class ManagedBloomFilter:
       A fully initialized ManagedBloomFilter, either resumed from disk
       or freshly allocated.
     """
-    if destination.exists():
+    if destination.exists():  # noqa: SIM108 (ternary would exceed the line-length limit)
       bloom_filter = load(destination)
     else:
       bloom_filter = BloomFilter(capacity, error_rate)
