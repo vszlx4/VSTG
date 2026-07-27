@@ -72,7 +72,7 @@ class BloomFilterRegistry:
     """Create a registry rooted at the given base directory.
     
     The directory is created immediately if it does not already
-    exist, so that registration cab proceed without every caller
+    exist, so that registration can proceed without every caller
     separately handling its absence.
 
     Args:

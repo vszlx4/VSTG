@@ -2,7 +2,7 @@
 
 This module holds only pure, side-effect-free functions: the probabilistic
 sizing calculations that determine how large a filter's bit array must be
-and how many many hash rounds it requires, and the deterministic derivation of
+and how many hash rounds it requires, and the deterministic derivation of
 the exact bit positions a given member maps to. Nothing here allocates or
 mutates state, and every function is fully deterministic given its inputs,
 which is what makes this module trivial to verify in isolation from the
@@ -23,14 +23,14 @@ def optimal_size(capacity: int, error_rate: float) -> int:
   array must allocate to satisfy that guarantee. The derivation follows
   the standard bloom filter capacity formula:
 
-    size = -(capacity * ln(error_rate)) . (ln(2) ** 2)
+    size = -(capacity * ln(error_rate)) / (ln(2) ** 2)
 
   The result is rounded upward, since under-allocating by even a single
   bit would violate the caller's requested error rate.
 
   Args:
     capacity: The number of members the filter is expected to hold.
-    error_rate: the desired false positive probability, expressed as a
+    error_rate: The desired false positive probability, expressed as a
                 value strictly between zero and one.
 
   Returns:
@@ -72,7 +72,7 @@ def optimal_hash_count(size: int, capacity: int) -> int:
     less than one.
 
   Raises:
-    ValueError: If size or capacity not positive
+    ValueError: If size or capacity is not positive
   """
   if size <= 0:
     raise ValueError("size must be a positive integer")
@@ -91,7 +91,7 @@ def bit_indices(member: bytes, size: int, hash_count: int) -> tuple[int, ...]:
   Rather than invoking hash_count independent hash functions, which would
   multiply the cost of every insertion and lookup, this applies the
   Kirsch-Mitzenmacher technique: two independent digests are computed once,
-  and every subsequent positions is derived from a linear combination of
+  and every subsequent position is derived from a linear combination of
   the two. This produces results statistically indistinguishable from
   hash_count genuinely independent hash functions at a fraction of the
   computational cost.
@@ -131,13 +131,13 @@ def bit_indices(member: bytes, size: int, hash_count: int) -> tuple[int, ...]:
   )
 
 def shard_index(member: bytes, shard_count: int) -> int:
-  """Deterministically route a member to exactly one of a fixed number of shards
+  """Deterministically route a member to exactly one of a fixed number of shards.
 
   This uses a hash domain entirely distinct from the one bit_indices
   draws from, since the two functions answer unrelated questions, this
   one decides which physical filter a member belongs to, bit_indices
   decides which bits within a single filter it sets, and conflating
-  their hash inputs would people two concerns that should remain
+  their hash inputs would couple two concerns that should remain
   independent of one another.
 
   Args:

@@ -1,6 +1,6 @@
 """Horizontally partitioned bloom filter spanning multiple physical files.
 
-A single BloomFilter, as implement in filter.py, is entirely adequate
+A single BloomFilter, as implemented in filter.py, is entirely adequate
 until the operational cost of checkpointing it becomes the bottleneck
 rather than the memory it occupies. Persisting one large filter means
 rewriting its complete bit array on every checkpoint, even when only a
@@ -32,7 +32,7 @@ class ShardedBloomFilter:
   correctness, this behaves identically to one large BloomFilter, the
   same asymmetric guarantee applies, a negative answer from the
   correct shard is certain, a positive answer is probable. What
-  differs in persistence: each shard checkpoints to its own file, and
+  differs is persistence: each shard checkpoints to its own file, and
   a checkpoint only never rewrites shards that received an insertion
   since the previous one.
 
