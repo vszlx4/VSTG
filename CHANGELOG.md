@@ -8,6 +8,13 @@ format.
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-07-27
+
+### Fixed
+- README on PyPI's project page reflected the pre-release install
+  instructions, since PyPI freezes the README at upload time rather
+  than linking it live to the repository. No code changes.
+
 ## [0.1.0] - 2026-07-27
 
 ### Added
