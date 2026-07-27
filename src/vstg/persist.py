@@ -4,7 +4,7 @@ A BloomFilter exists entirely in memory during normal operation, for
 the same reason any performance-sensitive structure does: disk access
 on every mutation would be several orders of magnitude slower than the
 bit-flipping the structure was designed to make cheap. This module
-provides the mechanism by which that in-memory state is peridoically
+provides the mechanism by which that in-memory state is periodically
 made durable, a compact binary serialization format, a pure decision
 function for when a checkpoint is warranted, and the atomic file
 operations that write and restore that format without risk of leaving
@@ -80,9 +80,9 @@ def should_checkpoint(
     policy: The checkpoint policy currently in effect.
     last_checkpoint_at: The timestamp, in seconds, at which the most
                         recent checkpoint was written.
-    current_time: The current timestamp, in seconds, measured aginst
+    current_time: The current timestamp, in seconds, measured against
                   last_checkpoint_at to determine elapsed time.
-    insert_since_checkpoint: The number of insertions that have occured
+    insert_since_checkpoint: The number of insertions that have occurred
                              since the most recent checkpoints.
 
   Returns:
@@ -104,7 +104,7 @@ def should_checkpoint(
 def serialize(bloom_filter: BloomFilter) -> bytes:
   """Encode a filter's complete state into a portable binary payload.
 
-  The payload beings with a fixed-width header indetifying the format
+  The payload beings with a fixed-width header identifying the format
   and recording the parameters required to reconstruct the filter,
   followed immediately by the raw bit array contents. The header opens
   with a four-byte signature and a version byte specifically so that a
@@ -178,7 +178,7 @@ def save(bloom_filter: BloomFilter, destination: Path) -> None:
   The payload is first written in full to a temporary sibling file and
   only then moved into place with an atomic rename This guarantees
   that a process interrupted mid-write, whether by a crash or a forced
-  shutdown, can never leave a corrupted, parrtially-written file at the
+  shutdown, can never leave a corrupted, partially-written file at the
   destination, the destination holds either the previous complete
   checkpoint or the new one, never a mixture of both.
 
