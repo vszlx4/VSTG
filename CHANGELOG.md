@@ -8,6 +8,8 @@ format.
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-07-27
+
 ### Added
 - `BloomFilter`, the core in-memory bit array with `add` and `might_contain`.
 - `core.py` sizing math, `optimal_size`, `optimal_hash_count`, `bit_indices`, `shard_index`.
